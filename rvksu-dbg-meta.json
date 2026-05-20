@@ -1,0 +1,38 @@
+{
+  "build_metadata": {
+    "author": "Majeed",
+    "codename": "Rvksu",
+    "git": {
+      "branch": "dbg",
+      "oem_branch": "dbg"
+    },
+    "version": "54.22-dbg",
+    "build": {
+      "os": "Ubuntu 25.04",
+      "architecture": "x86_64",
+      "timestamp": "2026-05-18T09:52:03Z",
+      "region": "US",
+      "vm_state": "unstable"
+    },
+    "hardware": {
+      "revision": "E5GN3H.AW"
+    },
+    "package": {
+      "endianness": "little-endian",
+      "compression": [
+        "lzma",
+        "gzip"
+      ]
+    },
+    "validation": {
+      "checksum": "PASS",
+      "oem_checksum": "PASS",
+      "signature": "a5da172c1fbbed832214ec0fe2a001f5dc745d94a2f410e1695cf1d9ef27f73f"
+    },
+    "test_flags": {
+      "debug_build": true,
+      "oem_debug": true,
+      "experimental": true
+    }
+  }
+}
