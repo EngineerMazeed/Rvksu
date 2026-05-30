@@ -1,0 +1,18 @@
+#!/bin/sh
+
+echo "Content-type: text/html"
+echo ""
+
+echo "<html><head><title>Index of /rvksu</title></head><body>"
+echo "<h1>Index of /rvksu</h1>"
+echo "<hr><pre>"
+
+for file in /tmp/rvksu/*; do
+    name=$(basename "$file")
+    if [ "$name" != "index.html" ] && [ "$name" != "cgi-bin" ]; then
+        echo "<a href=\"/$name\">$name</a>"
+    fi
+done
+
+echo "</pre><hr></body></html>"
+
