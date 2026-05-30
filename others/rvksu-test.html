@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rvksu Test Kit</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0c;
+            font-family: -apple-system, 'SF Mono', 'Inter', system-ui, monospace;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .dashboard {
+            max-width: 580px;
+            width: 100%;
+            background: #16161a;
+            border: 1px solid #23232a;
+            border-radius: 28px;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 1.8rem 2rem 1.2rem 2rem;
+            border-bottom: 1px solid #23232a;
+        }
+
+        .title {
+            font-size: 1.85rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #ffffff 0%, #b8b8d0 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: #7e7e92;
+            font-weight: 450;
+            letter-spacing: 0.2px;
+        }
+
+        .form-container {
+            padding: 2rem;
+        }
+
+        .input-block {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-block label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #9898aa;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-block input,
+        .input-block select {
+            width: 100%;
+            background: #0f0f13;
+            border: 1px solid #2a2a32;
+            border-radius: 12px;
+            padding: 0.8rem 1rem;
+            font-size: 0.9rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            color: #f0f0f8;
+            transition: all 0.18s ease;
+            outline: none;
+        }
+
+        .input-block input:focus,
+        .input-block select:focus {
+            border-color: #3a7eff;
+            box-shadow: 0 0 0 3px rgba(58, 126, 255, 0.2);
+            background: #121217;
+        }
+
+        .input-block input::placeholder {
+            color: #4a4a5e;
+            font-size: 0.85rem;
+        }
+
+        .row-duo {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .row-duo .input-block {
+            flex: 1;
+        }
+
+        .generate-btn {
+            width: 100%;
+            background: #3a7eff;
+            border: none;
+            border-radius: 40px;
+            padding: 0.85rem 1.2rem;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: inherit;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.1s ease, background 0.2s;
+        }
+
+        .generate-btn:hover {
+            background: #2a6aef;
+            transform: translateY(-1px);
+        }
+
+        .generate-btn:active {
+            transform: translateY(1px);
+            background: #1f5adf;
+        }
+
+        /* no footer elements, no info panels */
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div class="header">
+        <div class="title">Rvksu Test Kit</div>
+        <div class="subtitle">Advanced Cellular Carrier Profile Engine</div>
+    </div>
+    <div class="form-container">
+        <div class="input-block">
+            <label>APN Name</label>
+            <input type="text" id="apnName" placeholder="e.g., internet.telecom" autocomplete="off" spellcheck="false">
+        </div>
+
+        <div class="input-block">
+            <label>Authentication Type</label>
+            <select id="authType">
+                <option value="NONE">NONE</option>
+                <option value="PAP">PAP</option>
+                <option value="CHAP">CHAP</option>
+            </select>
+        </div>
+
+        <div class="row-duo">
+            <div class="input-block">
+                <label>Username</label>
+                <input type="text" id="username" placeholder="Optional" autocomplete="off">
+            </div>
+            <div class="input-block">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Optional">
+            </div>
+        </div>
+
+        <button class="generate-btn" id="generateBtn">Generate Profile</button>
+    </div>
+</div>
+
+<script>
+    (function() {
+        'use strict';
+
+        const generateUUIDv4 = () => {
+            const pattern = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+            return pattern.replace(/[xy]/g, (c) => {
+                const r = (Math.random() * 16) | 0;
+                const v = c === 'x' ? r : (r & 0x3) | 0x8;
+                return v.toString(16);
+            });
+        };
+
+        const escapeXml = (str) => {
+            if (!str) return '';
+            return str.replace(/[<>&'"]/g, (match) => {
+                if (match === '<') return '&lt;';
+                if (match === '>') return '&gt;';
+                if (match === '&') return '&amp;';
+                if (match === "'") return '&apos;';
+                if (match === '"') return '&quot;';
+                return match;
+            });
+        };
+
+        const buildApnDictionary = (apn, auth, user, pass) => {
+            let dict = '';
+            dict += '<dict>\n';
+            dict += `    <key>APNName</key>\n`;
+            dict += `    <string>${escapeXml(apn)}</string>\n`;
+
+            if (auth === 'NONE') {
+                dict += `    <key>AuthType</key>\n`;
+                dict += `    <string>NONE</string>\n`;
+            } else if (auth === 'PAP') {
+                dict += `    <key>AuthType</key>\n`;
+                dict += `    <string>PAP</string>\n`;
+            } else if (auth === 'CHAP') {
+                dict += `    <key>AuthType</key>\n`;
+                dict += `    <string>CHAP</string>\n`;
+            }
+
+            if (user && user.trim() !== '') {
+                dict += `    <key>Username</key>\n`;
+                dict += `    <string>${escapeXml(user)}</string>\n`;
+            }
+
+            if (pass && pass.trim() !== '') {
+                dict += `    <key>Password</key>\n`;
+                dict += `    <string>${escapeXml(pass)}</string>\n`;
+            }
+
+            dict += `    <key>DefaultProtocolMask</key>\n`;
+            dict += `    <integer>3</integer>\n`;
+            dict += `    <key>AllowedProtocolMask</key>\n`;
+            dict += `    <integer>3</integer>\n`;
+            dict += '</dict>';
+            return dict;
+        };
+
+        const buildMobileConfig = (apnValue, authTypeValue, usernameValue, passwordValue) => {
+            const rootUUID = generateUUIDv4();
+            const cellularUUID = generateUUIDv4();
+
+            const apnDict = buildApnDictionary(apnValue, authTypeValue, usernameValue, passwordValue);
+            const apnsArray = `<array>\n${apnDict}\n</array>`;
+            const attachApnBlock = apnDict;
+
+            const plistContent = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>PayloadDisplayName</key>
+            <string>Cellular Settings</string>
+            <key>PayloadIdentifier</key>
+            <string>com.rvksu.cellular.${cellularUUID}</string>
+            <key>PayloadType</key>
+            <string>com.apple.cellular</string>
+            <key>PayloadUUID</key>
+            <string>${cellularUUID}</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>PayloadOrganization</key>
+            <string>Rvksu</string>
+            <key>PayloadDescription</key>
+            <string>APN carrier configuration</string>
+            <key>APNs</key>
+            ${apnsArray}
+            <key>AttachAPN</key>
+            ${attachApnBlock}
+        </dict>
+    </array>
+    <key>PayloadDescription</key>
+    <string>Provisioning profile for testing non-configurable operator network environments.</string>
+    <key>PayloadDisplayName</key>
+    <string>Rvksu APN Profile (IPv6 support)(Ver. 1.2)</string>
+    <key>PayloadIdentifier</key>
+    <string>com.rvksu.profile.${rootUUID}</string>
+    <key>PayloadOrganization</key>
+    <string>Rvksu</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>${rootUUID}</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+    <key>ConsentText</key>
+    <dict>
+        <key>default</key>
+        <string>Rvksu APN Configuration Profile (IPv6 support)</string>
+    </dict>
+</dict>
+</plist>`;
+
+            return plistContent;
+        };
+
+        const downloadFile = (content, filename) => {
+            const blob = new Blob([content], { type: 'application/x-apple-aspen-config' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        };
+
+        const flashBorder = (element) => {
+            if (!element) return;
+            const originalBorder = element.style.borderColor;
+            const originalShadow = element.style.boxShadow;
+            element.style.borderColor = '#ff453a';
+            element.style.boxShadow = '0 0 0 2px rgba(255, 69, 58, 0.25)';
+            setTimeout(() => {
+                if (element) {
+                    element.style.borderColor = originalBorder;
+                    element.style.boxShadow = originalShadow;
+                }
+            }, 800);
+        };
+
+        const handleGenerate = () => {
+            const apnInput = document.getElementById('apnName');
+            const apnRaw = apnInput ? apnInput.value : '';
+            const apnClean = apnRaw.trim();
+
+            if (!apnClean) {
+                if (apnInput) flashBorder(apnInput);
+                return;
+            }
+
+            const authSelect = document.getElementById('authType');
+            const authVal = authSelect ? authSelect.value : 'NONE';
+
+            const usernameInput = document.getElementById('username');
+            const usernameVal = usernameInput ? usernameInput.value : '';
+
+            const passwordInput = document.getElementById('password');
+            const passwordVal = passwordInput ? passwordInput.value : '';
+
+            const mobileconfigXml = buildMobileConfig(apnClean, authVal, usernameVal, passwordVal);
+            downloadFile(mobileconfigXml, 'Rvksu_apn.mobileconfig');
+        };
+
+        const btn = document.getElementById('generateBtn');
+        if (btn) {
+            btn.addEventListener('click', handleGenerate);
+        }
+
+        const apnField = document.getElementById('apnName');
+        const usernameField = document.getElementById('username');
+        const passwordField = document.getElementById('password');
+        const authField = document.getElementById('authType');
+
+        const handleEnter = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleGenerate();
+            }
+        };
+
+        if (apnField) apnField.addEventListener('keypress', handleEnter);
+        if (usernameField) usernameField.addEventListener('keypress', handleEnter);
+        if (passwordField) passwordField.addEventListener('keypress', handleEnter);
+        if (authField) authField.addEventListener('keypress', handleEnter);
+    })();
+</script>
+</body>
+</html>
